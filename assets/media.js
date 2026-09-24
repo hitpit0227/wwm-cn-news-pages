@@ -23,7 +23,7 @@ function mobileRegions(filename,labels){
     ],
     'f58054de109fb6df5b7011b0a7a25219ffa8f0e4ae8df85e21bedaf7c28df72f.jpg':[
       {box:[.79,.03,.20,.83],labels:[0,1]},
-      {box:[.02,.59,.55,.40],labels:[2,3]}
+      {box:[0,.55,.60,.45],labels:[2,3]}
     ]
   };
   const reviewed=plans[filename];
