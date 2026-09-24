@@ -56,10 +56,23 @@ document.querySelectorAll('.artwork').forEach(art=>{
   const labels=[...art.querySelectorAll('.art-label')].map(el=>({
     el,x:parseFloat(el.style.left)||0,y:parseFloat(el.style.top)||0,
     size:parseFloat(el.dataset.size||el.style.fontSize)||2,
-    vertical:el.classList.contains('vertical'),text:el.textContent,
+    vertical:el.classList.contains('vertical'),text:el.dataset.text||el.textContent,
     color:el.style.color,shadow:el.style.textShadow
   }));
   if(!img||!labels.length)return;
+  // Reviewed source-specific placements; preserve source pixels and mobile originals.
+  const filename=new URL(img.src).pathname.split('/').pop();
+  if(filename==='f58054de109fb6df5b7011b0a7a25219ffa8f0e4ae8df85e21bedaf7c28df72f.jpg'){
+    Object.assign(labels[0],{text:'새 이야기 / 새 친구 / 새 수호자 / 새 우두머리',x:87,y:15,size:1.5,vertical:true});
+    Object.assign(labels[1],{text:'항저우 전역 개방',x:83,y:15,size:1.5,vertical:true});
+    labels[2].text='협객들이 평란에 모여 이 달을 함께하다';
+    labels[3].text='9월 24일 ❖ 새 버전 「잔잔한 물결에 풍파가 일다」 출시';
+  }
+  if(filename==='7e7d7080cc790ddc224d908a0688ca684f9123c47f32bdb1657bf7e6b522f2b1.jpg'){
+    Object.assign(labels[0],{text:'모바일 불필요 리소스 정리 기능 출시',x:3,y:3,size:2.6,vertical:false});
+    labels[1].el.remove();labels.splice(1,1);
+  }
+
   art.parentElement.removeAttribute('tabindex');
   art.parentElement.setAttribute('aria-label','한국어 번역 이미지');
   const intersects=(a,b)=>a.x<b.x+b.w+5&&a.x+a.w+5>b.x&&a.y<b.y+b.h+5&&a.y+a.h+5>b.y;
