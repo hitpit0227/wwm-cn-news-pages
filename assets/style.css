@@ -10,3 +10,19 @@
 .art-scroll{overflow:visible;max-width:100%;min-width:0}
 .artwork{width:100%;max-width:100%;min-width:0!important}
 .artwork .art-label{font-size:max(16px,2cqw);max-width:100%;overflow-wrap:anywhere}
+
+/* Mobile source-and-translation pairs; desktop artwork stays unchanged. */
+.mobile-panels{display:none}
+@media(max-width:600px){
+ .artwork.mobile-segmented{display:none}
+ .mobile-panels{display:block}
+ .mobile-overview{margin:0 0 22px;color:var(--muted);font-size:14px}
+ .mobile-overview summary,.mobile-panel>summary{cursor:pointer;margin-bottom:10px}
+ .mobile-overview img{width:100%;height:auto}
+ .mobile-panel{margin:0 0 26px;min-width:0}
+ .mobile-crop{position:relative;overflow:hidden;margin:0 auto 8px;border-radius:4px}
+ .mobile-crop img{position:absolute;margin:0;border-radius:0}
+ .mobile-region-copy{font-size:16px;line-height:1.65;font-weight:400;color:var(--ink);word-break:keep-all;overflow-wrap:anywhere}
+ .mobile-region-copy p.mobile-caption{font-size:16px;line-height:1.65;font-weight:400;margin:5px 0 10px}
+ .mobile-panel>summary{font-size:14px;color:var(--muted)}
+}
