@@ -127,8 +127,11 @@ document.querySelectorAll('.artwork').forEach(art=>{
         el.style.whiteSpace='pre';
         // Use the full available height before introducing a second column.
         const chars=label.text.replace(/\s/g,'');
-        if(chars.length*font<=height){el.textContent=chars;}
-        else {el.classList.remove('vertical');}
+        const available=Math.max(font,height-anchor.y-8);
+        const capacity=Math.max(1,Math.floor(available/font));
+        const columns=Math.max(1,Math.ceil(chars.length/capacity));
+        const rows=Math.ceil(chars.length/columns);
+        el.textContent=Array.from({length:columns},(_,i)=>chars.slice(i*rows,(i+1)*rows)).join('\n');
       }
       if(!el.classList.contains('vertical')){
         el.textContent=label.text.replace(/\n/g,'');
