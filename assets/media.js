@@ -18,11 +18,39 @@ document.querySelectorAll('.artwork').forEach(art=>{
   art.parentElement.removeAttribute('tabindex');
   art.parentElement.setAttribute('aria-label','한국어 번역 이미지');
   const intersects=(a,b)=>a.x<b.x+b.w+5&&a.x+a.w+5>b.x&&a.y<b.y+b.h+5&&a.y+a.h+5>b.y;
+  // Narrow screens get their own layout; the desktop path below is unchanged.
+  function mobileLayout(width,height){
+    const placed=[],notes=[];
+    const clamp=(v,max)=>Math.max(0,Math.min(max,v));
+    for(const label of labels){
+      const el=label.el,text=label.text.replace(/\n/g,'');
+      el.classList.remove('vertical');
+      Object.assign(el.style,{fontSize:'16px',lineHeight:'1.5',fontWeight:'600',whiteSpace:'normal',height:'auto',maxWidth:width+'px',color:label.color,textShadow:label.shadow});
+      el.textContent=text;
+      const long=text.length>24;
+      el.style.width=Math.min(width,Math.max(96,Math.min(180,width*.42,text.length*16)))+'px';
+      const box=el.getBoundingClientRect(),w=box.width,h=box.height;
+      const x=clamp(width*label.x/100,width-w),y=clamp(height*label.y/100,height-h);
+      const candidates=[{x,y},{x,y:y-h-6},{x,y:y+h+6}];
+      for(const q of placed)candidates.push({x,y:q.y+q.h+6},{x,y:q.y-h-6});
+      const pos=!long&&candidates.find(p=>p.y>=0&&p.y+h<=height&&Math.abs(p.y-y)<=48&&!placed.some(q=>intersects({...p,w,h},q)));
+      if(pos){el.style.left=pos.x+'px';el.style.top=pos.y+'px';placed.push({...pos,w,h});}
+      else notes.push(label);
+    }
+    let bottom=height;
+    for(const {el} of notes){
+      Object.assign(el.style,{left:'0px',top:(bottom+10)+'px',width:width+'px',fontWeight:'400',color:'var(--ink)',textShadow:'none',lineHeight:'1.6'});
+      bottom+=10+el.getBoundingClientRect().height;
+    }
+    art.style.height=Math.ceil(bottom)+'px';
+  }
   let frame;
   function layout(){
     const width=art.clientWidth,height=img.getBoundingClientRect().height;
     if(!width||!height)return;
     art.style.height='auto';
+    if(window.innerWidth<=600){mobileLayout(width,height);return;}
+    for(const {el} of labels){el.style.lineHeight='1.25';el.style.fontWeight='700';}
     const placed=[];
     let bottom=height;
     for(const label of labels){
