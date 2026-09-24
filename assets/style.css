@@ -5,3 +5,8 @@
 .artwork{position:relative;container-type:inline-size}.artwork img{display:block;width:100%;height:auto}.art-label{position:absolute;font-size:min(1.55cqw,15px);font-weight:600;line-height:1.25;color:#332c21;text-shadow:0 0 3px #fff9;pointer-events:none;border:0;background:transparent;max-width:none;white-space:pre}.art-label.vertical{writing-mode:vertical-lr;text-orientation:upright;white-space:pre;letter-spacing:0;max-width:none}
 
 .art-scroll{overflow-x:auto}.artwork .art-label{font-weight:700}.article:has(.reconstructed){max-width:1200px}
+
+/* Responsive artwork: never enlarge the image just to enlarge its text. */
+.art-scroll{overflow:visible;max-width:100%;min-width:0}
+.artwork{width:100%;max-width:100%;min-width:0!important}
+.artwork .art-label{font-size:max(16px,2cqw);max-width:100%;overflow-wrap:anywhere}
