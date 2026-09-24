@@ -107,3 +107,4 @@ document.querySelectorAll('.artwork').forEach(art=>{
   img.addEventListener('load',schedule);
   document.fonts.ready.then(schedule);schedule();
 });
+
