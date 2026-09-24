@@ -148,17 +148,20 @@ document.querySelectorAll('.artwork').forEach(art=>{
         candidates.push({x:clampX(p.x-w-6),y:anchor.y});
         candidates.push({x:clampX(anchor.x),y:Math.max(0,p.y-h-6)});
       }
-      candidates.sort((a,b)=>Math.hypot(a.x-anchor.x,a.y-anchor.y)-Math.hypot(b.x-anchor.x,b.y-anchor.y));
-      let pos=candidates.find(p=>p.y>=0&&p.y+h<=height&&Math.hypot(p.x-anchor.x,p.y-anchor.y)<=Math.max(48,height*.12)&&!placed.some(q=>intersects({...p,w,h},q)));
-      // Dense artwork can need extra nearby space on narrow phones. Move the
-      // existing caption once; never duplicate it or shrink it below 16px.
-      if(!pos){
-        el.classList.remove('vertical');el.textContent=label.text.replace(/\n/g,'');
-        el.style.whiteSpace='normal';el.style.width=width+'px';
-        h=el.getBoundingClientRect().height;w=width;
-        pos={x:0,y:bottom+8};
-        el.style.color='#30251a';el.style.textShadow='none';
+      // Search locally around the source anchor before declaring placement impossible.
+      const radius=Math.max(48,Math.min(180,height*.22));
+      const step=Math.max(8,font*.75);
+      for(let dy=-radius;dy<=radius;dy+=step){
+        for(let dx=-radius;dx<=radius;dx+=step){
+          candidates.push({x:clampX(anchor.x+dx),y:anchor.y+dy});
+        }
       }
+      candidates.sort((a,b)=>Math.hypot(a.x-anchor.x,a.y-anchor.y)-Math.hypot(b.x-anchor.x,b.y-anchor.y));
+      let pos=candidates.find(p=>p.y>=0&&p.y+h<=height&&Math.hypot(p.x-anchor.x,p.y-anchor.y)<=radius&&!placed.some(q=>intersects({...p,w,h},q)));
+      // Never silently change direction or detach a caption from its artwork.
+      // The publication gate rejects unresolved placement instead of hiding it.
+      el.dataset.layoutError=pos?'':'no_nearby_space';
+      if(!pos)pos=candidates[0];
       el.style.left=pos.x+'px';el.style.top=pos.y+'px';
       placed.push({...pos,w,h});bottom=Math.max(bottom,pos.y+h);
     }
