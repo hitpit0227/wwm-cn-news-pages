@@ -93,7 +93,7 @@ document.querySelectorAll('.artwork').forEach(art=>{
   }
   let frame;
   function layout(){
-    if(window.innerWidth<=600&&img.naturalWidth){mobileLayout();return;}
+    if(window.innerWidth<=600)return;
     const width=art.clientWidth,height=img.getBoundingClientRect().height;
     if(!width||!height)return;
     art.style.height='auto';
