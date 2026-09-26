@@ -19,6 +19,8 @@
  .mobile-original img{width:100%;height:auto}
 }
 
+.bottom-back{margin:32px 0 0}
+
 .to-top{position:fixed;right:calc((100vw - 860px)/2 - 32px);bottom:24px;z-index:50;display:grid;place-items:center;width:52px;height:52px;border-radius:50%;background:var(--accent);color:#fff;text-decoration:none;font-size:13px;font-weight:700;box-shadow:0 3px 14px #0003}.to-top:hover{background:#104c3e}@media(max-width:600px){.to-top{right:16px;bottom:16px;width:46px;height:46px}}
 
 body:has(.article .reconstructed) .to-top{right:calc((100vw - 1200px)/2 - 32px)}
