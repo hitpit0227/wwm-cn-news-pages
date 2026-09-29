@@ -33,3 +33,5 @@ body:has(.article .reconstructed) .to-top{right:calc((100vw - 1200px)/2 - 32px)}
 .source-heading{font-size:1.18em;font-weight:800;line-height:1.55;letter-spacing:-.02em;word-break:keep-all;overflow-wrap:anywhere}
 .source-emphasis{font-size:inherit;font-weight:650;line-height:inherit}
 @media(max-width:600px){.source-heading{font-size:1.12em}}
+
+.source-heading .source-emphasis{font:inherit}
