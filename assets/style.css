@@ -35,3 +35,29 @@ body:has(.article .reconstructed) .to-top{right:calc((100vw - 1200px)/2 - 32px)}
 @media(max-width:600px){.source-heading{font-size:1.12em}}
 
 .source-heading .source-emphasis{font:inherit}
+
+/* Original official news scenery; scoped to articles, not the news index. */
+body[data-revision]{
+ --paper:#141d26;--ink:#edf0ee;--muted:#bec8d0;--line:#53606a;--accent:#e4c88e;--wash:#101b24;
+ background-color:var(--paper);
+ background-image:url("https://www.yysls.cn/pc/gw/20250826111324/img/bg-top_1302c00b.jpg?image_process=format,jpg"),url("https://www.yysls.cn/pc/gw/20250826111324/img/bg-bottom_7a7727d8.jpg?image_process=format,jpg");
+ background-position:center top,center bottom;background-size:100% auto,100% auto;background-repeat:no-repeat;
+ min-height:100vh;color-scheme:dark;
+}
+body[data-revision] .masthead{border-color:#b9c7cf30;background:transparent}
+body[data-revision] .article{margin-top:clamp(125px,13vw,230px);margin-bottom:90px;background:rgba(12,21,29,.86);border:1px solid #c5d2dc24;border-radius:6px;padding:48px 44px 64px;box-shadow:0 18px 65px #0003}
+body[data-revision] h1{color:#f5f1e8}
+body[data-revision] .summary{background:rgba(3,10,16,.48);border-color:var(--accent)}
+body[data-revision] .contents{border-color:#b9c7cf40}
+body[data-revision] .video-box{background:#0d151d}
+body[data-revision] .to-top{color:#14202a;background:var(--accent)}
+body[data-revision] .to-top:hover{background:#f4dca8}
+body[data-revision] .site-footer{background:#0c141bcc;border-color:#b9c7cf30}
+body[data-revision] .original-image summary{color:var(--muted)}
+@media(max-width:600px){
+ body[data-revision]{background-size:auto 350px,auto 400px;background-position:62% top,center bottom}
+ body[data-revision] .article{margin:112px 10px 36px;padding:26px 20px 40px;border-radius:4px;background:rgba(12,21,29,.91)}
+ body[data-revision] .masthead{padding:20px}
+}
+@media(prefers-reduced-transparency:reduce){body[data-revision] .article{background:#101b24}}
+@media print{body[data-revision]{background:#fff;color:#111;color-scheme:light}body[data-revision] .article{background:#fff;margin:0;border:0;box-shadow:none}body[data-revision] h1{color:#111}body[data-revision] .source-emphasis,body[data-revision] .source-heading{color:#574316!important}}
