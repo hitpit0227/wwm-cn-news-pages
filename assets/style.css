@@ -53,13 +53,13 @@ h1{color:#f5f1e8}
 @media print{body{background:#fff;color:#111;color-scheme:light}.article,.feed{width:100%;margin:0}h1{color:#111}.source-emphasis,.source-heading{color:#574316!important}}
 
 /* Paired jump controls stay in the reading gutter. */
-.page-scroll{position:fixed;right:24px;top:50%;transform:translateY(-50%);z-index:50;display:flex;flex-direction:column;overflow:hidden;border:1px solid #e4c88e80;border-radius:28px;background:#14202af2;box-shadow:0 3px 16px #0005}
+.page-scroll{position:fixed;right:max(12px,calc((100vw - min(60.416667vw,1160px))/2 - 66px));top:50%;transform:translateY(-50%);z-index:50;display:flex;flex-direction:column;overflow:hidden;border:1px solid #e4c88e80;border-radius:28px;background:#14202af2;box-shadow:0 3px 16px #0005}
 .page-scroll a{display:grid;place-items:center;width:48px;height:48px;color:#e4c88e;text-decoration:none}
 .page-scroll a+a{border-top:1px solid #e4c88e50}
 .page-scroll a:hover{background:#e4c88e;color:#14202a}
 .page-scroll a:focus-visible{outline:2px solid #fff;outline-offset:-5px}
 .page-scroll svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
-@media(max-width:1000px){body[data-revision] .article{width:calc(100% - 92px);margin-left:20px;margin-right:72px}.page-scroll{right:12px}}
+@media(max-width:1000px){.page-scroll{right:12px}}
 @media(max-width:600px){.page-scroll{top:auto;bottom:max(20px,env(safe-area-inset-bottom));transform:none}.page-scroll a{width:44px;height:44px}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
 @media print{.page-scroll{display:none}}
