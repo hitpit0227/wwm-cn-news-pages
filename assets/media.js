@@ -1,11 +1,33 @@
-// Keep 15% of the preceding view visible while reading.
-document.querySelectorAll('.page-scroll [data-scroll-step]').forEach(button=>{
-  button.addEventListener('click',()=>{
-    const direction=Number(button.dataset.scrollStep);
-    const height=window.visualViewport?.height || window.innerHeight;
-    window.scrollBy({top:direction*height*.85,behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});
+// Explicitly requested animated reading steps, independent of native scroll settings.
+(()=>{
+  let frame=0;
+  const cancel=()=>{cancelAnimationFrame(frame);frame=0;};
+  document.querySelectorAll('.page-scroll [data-scroll-step]').forEach(button=>{
+    button.addEventListener('click',()=>{
+      cancel();
+      const start=window.scrollY;
+      const height=window.visualViewport?.height || window.innerHeight;
+      const max=Math.max(0,document.documentElement.scrollHeight-window.innerHeight);
+      const target=Math.max(0,Math.min(max,start+Number(button.dataset.scrollStep)*height*.85));
+      const distance=target-start;
+      if(Math.abs(distance)<1)return;
+      const started=performance.now();
+      const tick=now=>{
+        const progress=Math.min(1,(now-started)/480);
+        const eased=progress*progress*(3-2*progress);
+        window.scrollTo({top:start+distance*eased,behavior:'instant'});
+        frame=progress<1?requestAnimationFrame(tick):0;
+      };
+      frame=requestAnimationFrame(tick);
+    });
   });
-});
+  window.addEventListener('wheel',cancel,{passive:true});
+  window.addEventListener('touchstart',cancel,{passive:true});
+  window.addEventListener('keydown',event=>{
+    if(['ArrowUp','ArrowDown','PageUp','PageDown','Home','End','Escape'].includes(event.key)||
+      (event.code==='Space'&&!event.target.closest('.page-scroll')))cancel();
+  });
+})();
 
 // Boxes are normalized x/y/width/height of the displayed source artwork.
 // Reviewed regions use existing caption indices; they never generate new text.
