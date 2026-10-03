@@ -1,3 +1,12 @@
+// Keep 15% of the preceding view visible while reading.
+document.querySelectorAll('.page-scroll [data-scroll-step]').forEach(button=>{
+  button.addEventListener('click',()=>{
+    const direction=Number(button.dataset.scrollStep);
+    const height=window.visualViewport?.height || window.innerHeight;
+    window.scrollBy({top:direction*height*.85,behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});
+  });
+});
+
 // Boxes are normalized x/y/width/height of the displayed source artwork.
 // Reviewed regions use existing caption indices; they never generate new text.
 function mobileRegions(filename,labels){
