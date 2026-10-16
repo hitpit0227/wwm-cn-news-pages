@@ -56,6 +56,15 @@ h1{color:#f5f1e8}
 .page-scroll{position:fixed;right:max(12px,calc((100vw - min(60.416667vw,1160px))/2 - 66px));top:50%;transform:translateY(-50%);z-index:50;display:flex;flex-direction:column;overflow:hidden;border:1px solid #e4c88e80;border-radius:28px;background:#14202af2;box-shadow:0 3px 16px #0005}
 .page-scroll button{display:grid;place-items:center;width:48px;height:48px;color:#e4c88e;text-decoration:none}
 .page-scroll button+button{border-top:1px solid #e4c88e50}
+
+.archive-nav{margin-top:56px;padding-top:28px;border-top:1px solid #b69a6655;scroll-margin-top:24px}
+.archive-nav h2{font-size:1.5rem}.archive-nav h3{margin:24px 0 12px;font-size:1.1rem}
+.archive-months{display:flex;flex-wrap:wrap;gap:10px}
+.archive-months a{display:flex;gap:18px;align-items:center;padding:12px 18px;border:1px solid #b69a6680;border-radius:6px;text-decoration:none}
+.archive-months a span{font-size:.85rem;opacity:.7}
+.archive-months a:hover,.archive-months a[aria-current=page]{background:#b69a6620}
+.archive-months a:focus-visible{outline:2px solid currentColor;outline-offset:3px}
+[hidden]{display:none!important}
 .page-scroll button:hover{background:#e4c88e;color:#14202a}
 .page-scroll button:focus-visible{outline:2px solid #fff;outline-offset:-5px}
 .page-scroll svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
