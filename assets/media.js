@@ -89,6 +89,9 @@ function mobileRegions(filename,labels){
     document.head.append(script);
   }));
   for(const video of document.querySelectorAll('video[data-taptap-video-id]')){
+    // Show only our loading overlay before preparation; thereafter use
+    // native video controls, never both play buttons simultaneously.
+    video.controls=false;
     const box=video.closest('.video-box');
     const button=box?.querySelector('.video-play');
     const status=button?.querySelector('.video-play-status');
@@ -97,6 +100,7 @@ function mobileRegions(filename,labels){
     const setStatus=value=>{if(status)status.textContent=value;};
     const fail=()=>{
       initializing=false;ready=false;
+      video.controls=false;
       video.setAttribute('data-playback-error','true');
       if(hls){hls.destroy();hls=null;}
       if(error)error.hidden=false;
@@ -124,7 +128,9 @@ function mobileRegions(filename,labels){
       if(video.getAttribute('data-playback-error')==='true')return;
       ready=true;initializing=false;
       video.dataset.initialized='true';
-      if(button){button.disabled=false;button.hidden=!video.paused;}
+      // Switch atomically from custom overlay to the browser's one native play control.
+      if(button){button.disabled=false;button.hidden=true;}
+      video.controls=true;
       setStatus('');
     };
     const prepare=async()=>{
@@ -169,8 +175,7 @@ function mobileRegions(filename,labels){
       video.play().catch(fail);
     });
     video.addEventListener('play',()=>{if(button)button.hidden=true;});
-    video.addEventListener('pause',()=>{if(button&&ready)button.hidden=false;});
-    video.addEventListener('ended',()=>{if(button&&ready)button.hidden=false;});
+    // Once ready, native controls handle pause/resume/end without a second overlay.
     prepare();
   }
 })();
