@@ -180,39 +180,73 @@ function mobileRegions(filename,labels){
   }
 })();
 
-// Source MP4s use the same full-frame play button as TapTap, without
-// autoplay or altering the original CDN stream. Seek a fraction of a second
-// while paused so browsers can show the actual first frame instead of an
-// empty box when the official page supplies no poster image.
+// Original official MP4s now use the SAME prepare -> native-controls
+// transition as TapTap. Never autoplay; preserve the original CDN URL.
 document.querySelectorAll('.video-box-official').forEach(box=>{
   const video=box.querySelector('video');
-  const play=box.querySelector('.video-play-official');
+  const button=box.querySelector('.video-play');
+  const status=button?.querySelector('.video-play-status');
   const error=box.querySelector('.video-error');
-  if(!video||!play)return;
-  let playingStarted=false;
+  if(!video||!button)return;
+  let ready=false,started=false;
   video.controls=false;
-  video.addEventListener('loadedmetadata',()=>{
-    if(playingStarted||video.poster||!video.seekable?.length)return;
-    const target=Number.isFinite(video.duration)?Math.min(0.12,Math.max(0,video.duration-.02)):0.12;
-    try{video.currentTime=target;}catch(_ignored){}
-  },{once:true});
+  const setStatus=text=>{if(status)status.textContent=text;};
   const showFailure=()=>{
+    video.setAttribute('data-playback-error','true');
+    ready=false;
     if(error)error.hidden=false;
-    play.hidden=false;
-    play.disabled=false;
+    video.controls=false;
+    button.hidden=false;
+    button.disabled=false;
+    setStatus('다시 시도');
+  };
+  const prepared=()=>{
+    if(video.getAttribute('data-playback-error')==='true')return;
+    ready=true;
+    video.dataset.initialized='true';
+    button.hidden=true;
+    button.disabled=false;
+    setStatus('');
     video.controls=true;
   };
+  const preview=()=>{
+    // The source has no poster image; reveal the original first frame.
+    if(started||video.poster||!video.seekable?.length)return;
+    const target=Number.isFinite(video.duration)?Math.min(.12,Math.max(0,video.duration-.02)):.12;
+    try{video.currentTime=target;}catch(_ignored){}
+  };
   video.addEventListener('error',showFailure);
-  play.addEventListener('click',()=>{
-    playingStarted=true;
-    play.hidden=true;
+  video.addEventListener('loadedmetadata',()=>{preview();prepared();});
+  video.addEventListener('play',()=>{
+    started=true;
+    button.hidden=true;
     video.controls=true;
-    video.play().catch(showFailure);
   });
   video.addEventListener('ended',()=>{
-    play.hidden=false;
-    video.controls=false;
+    // Native controls replay the video. No duplicate center overlay.
+    button.hidden=true;
+    video.controls=true;
   });
+  // Mobile preload can be deferred. After a grace period, allow a
+  // gesture-initiated play even without metadata.
+  const fallback=setTimeout(()=>{
+    if(ready||video.getAttribute('data-playback-error')==='true')return;
+    button.disabled=false;
+    setStatus('');
+  },4200);
+  video.addEventListener('loadedmetadata',()=>clearTimeout(fallback),{once:true});
+  button.addEventListener('click',()=>{
+    if(video.getAttribute('data-playback-error')==='true'){
+      video.removeAttribute('data-playback-error');
+      if(error)error.hidden=true;
+      video.load();
+    }
+    if(!ready){video.controls=true;}
+    button.hidden=true;
+    video.play().catch(showFailure);
+  });
+  if(video.readyState>=1){preview();prepared();}
+  else video.load();
 });
 
 document.querySelectorAll('video').forEach(video=>{

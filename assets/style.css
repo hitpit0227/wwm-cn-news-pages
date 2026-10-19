@@ -95,4 +95,4 @@ h1{color:#f5f1e8}
 .video-box-official .video-error{font-size:13px;color:#f3d2c0;margin:10px 0 0}
 .video-box-official .video-error a{color:#f1d58b}
 .video-box-official .video-play[hidden]{display:none}
-@media(max-width:600px){.video-box-official{padding:8px}}
+@media(max-width:600px){.video-box-official{padding:16px}}
