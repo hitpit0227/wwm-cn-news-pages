@@ -129,17 +129,21 @@ function mobileRegions(filename,labels){
         if(stream.protocol!=='https:')throw new Error('unsafe stream');
         if(!/\.m3u8(?:$|[?#])/i.test(stream.pathname+stream.search)){
           video.src=stream.href;
-        }else if(video.canPlayType('application/vnd.apple.mpegurl')){
-          video.src=stream.href;
         }else{
+          // Chromium-based browsers can report native HLS support while the
+          // underlying player rejects the TapTap variant. Prefer MSE/hls.js
+          // when available, retaining native HLS for Safari/iOS fallback.
           const Hls=await loadHls();
-          if(!Hls.isSupported())throw new Error('HLS unsupported');
-          const hls=new Hls({enableWorker:true});
-          hls.on(Hls.Events.ERROR,(_event,details)=>{
-            if(details.fatal){hls.destroy();fail();}
-          });
-          hls.loadSource(stream.href);
-          hls.attachMedia(video);
+          if(Hls.isSupported()){
+            const hls=new Hls({enableWorker:true});
+            hls.on(Hls.Events.ERROR,(_event,details)=>{
+              if(details.fatal){hls.destroy();fail();}
+            });
+            hls.loadSource(stream.href);
+            hls.attachMedia(video);
+          }else if(video.canPlayType('application/vnd.apple.mpegurl')){
+            video.src=stream.href;
+          }else throw new Error('HLS unsupported');
         }
         if(button)button.hidden=true;
       }catch(_error){fail();}
