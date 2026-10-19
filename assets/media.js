@@ -105,19 +105,28 @@ function mobileRegions(filename,labels){
         cover.src=fallback;
       }
     });
+    let preview=null;
     if(linkedCard){
-      // Native browser controls, no custom central button or autoplay.
+      // No central play overlay. Probe the TapTap full preview first, and
+      // fall back to the previously visible icon if full-size CDNs fail.
+      // Keep the browser's bottom controls unobstructed at all times.
       video.controls=true;
       const original=video.getAttribute('poster')||'';
       if(/^https:\/\/[a-z0-9.-]+\.tapimg\.com\//i.test(original)){
         const base=original.replace(/\/_tap_[a-z0-9_.-]+$/i,'');
         const candidates=[...new Set([base+'/_tap_ugc.jpg',base,base+'/_tap_icon.jpg'])];
         let current=0;
-        const probe=new Image();
-        probe.referrerPolicy='no-referrer';
-        probe.onload=()=>{video.poster=probe.src;};
-        probe.onerror=()=>{if(++current<candidates.length)probe.src=candidates[current];};
-        probe.src=candidates[0];
+        preview=document.createElement('img');
+        preview.className='video-preview';
+        preview.alt='원본 영상 미리보기';
+        preview.referrerPolicy='no-referrer';
+        preview.decoding='async';
+        preview.addEventListener('error',()=>{
+          if(++current<candidates.length)preview.src=candidates[current];
+          else preview.hidden=true;
+        });
+        box.appendChild(preview);
+        preview.src=candidates[0];
       }
     }
     let ready=false,initializing=false,hls=null;
@@ -206,6 +215,7 @@ function mobileRegions(filename,labels){
     video.addEventListener('play',()=>{
       if(button)button.hidden=true;
       if(cover)cover.hidden=true;
+      if(preview)preview.hidden=true;
       video.controls=true;
     });
     // Once ready, native controls handle pause/resume/end without a second overlay.

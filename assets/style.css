@@ -102,3 +102,7 @@ h1{color:#f5f1e8}
 .video-box .video-cover{position:absolute;top:16px;left:16px;width:calc(100% - 32px);height:auto;aspect-ratio:16 / 9;object-fit:contain;background:#05090c;pointer-events:none;z-index:1;display:block}
 .video-box .video-cover[hidden]{display:none}
 .video-box:has(video[data-taptap-video-id]) .video-play{z-index:3}
+
+/* Source thumbnail is strictly above the native bottom playback controls. */
+.video-box-linked .video-preview{position:absolute;top:16px;left:16px;width:calc(100% - 32px);height:calc(100% - 86px);max-width:none;object-fit:contain;background:#05090c;pointer-events:none;z-index:1}
+.video-box-linked .video-preview[hidden]{display:none}
