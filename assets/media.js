@@ -74,7 +74,83 @@ function mobileRegions(filename,labels){
   });
 }
 
+// TapTap video uses the original stream address only. No download, conversion,
+// proxy, or video hosting occurs on this site. Signed URLs and cross-origin
+// playback must be checked in a real browser before publication is enabled.
+(()=>{
+  const cdn='https://cdn.jsdelivr.net/npm/hls.js@1.7.3/dist/hls.min.js';
+  let library;
+  const loadHls=()=>library||(library=new Promise((resolve,reject)=>{
+    if(window.Hls)return resolve(window.Hls);
+    const script=document.createElement('script');
+    script.src=cdn;script.async=true;
+    script.onload=()=>window.Hls?resolve(window.Hls):reject(new Error('HLS unavailable'));
+    script.onerror=()=>reject(new Error('HLS script load failed'));
+    document.head.append(script);
+  }));
+  for(const video of document.querySelectorAll('video[data-taptap-video-id]')){
+    const box=video.closest('.video-box');
+    const button=box?.querySelector('.video-load');
+    const error=box?.querySelector('.video-error');
+    const fail=()=>{
+      video.dataset.initialized='';
+      if(error)error.hidden=false;
+      video.setAttribute('data-playback-error','true');
+      if(button){button.hidden=false;button.disabled=false;button.textContent='원본 영상 다시 불러오기';}
+    };
+    video.addEventListener('error',fail);
+    const getStream=async()=>{
+      const endpoint=video.dataset.taptapPlaybackEndpoint;
+      if(!endpoint)return video.dataset.taptapStream;
+      const api=new URL(endpoint);
+      if(api.protocol!=='https:' || api.pathname!=='/api/video' || api.search)
+        throw new Error('invalid playback endpoint');
+      const id=video.dataset.taptapVideoId;
+      if(!/^\d{5,12}$/.test(id))throw new Error('invalid source video ID');
+      api.searchParams.set('video_id',id);
+      const response=await fetch(api.href,{mode:'cors',credentials:'omit',cache:'no-store'});
+      if(!response.ok)throw new Error('original playback API unavailable');
+      const data=await response.json();
+      if(String(data.video_id)!==id || typeof data.stream_url!=='string')
+        throw new Error('source video identity mismatch');
+      return data.stream_url;
+    };
+    const start=async()=>{
+      if(video.dataset.initialized==='true')return;
+      video.dataset.initialized='true';
+      video.removeAttribute('data-playback-error');
+      if(error)error.hidden=true;
+      if(button){button.disabled=true;button.textContent='원본 영상 연결 중…';}
+      try{
+        // Resolve the original signed source address at user interaction time.
+        // This endpoint transfers only metadata; HLS segments are served directly
+        // by TapTap's original CDN, with no local video files or video proxy.
+        const stream=new URL(await getStream());
+        if(stream.protocol!=='https:')throw new Error('unsafe stream');
+        if(!/\.m3u8(?:$|[?#])/i.test(stream.pathname+stream.search)){
+          video.src=stream.href;
+        }else if(video.canPlayType('application/vnd.apple.mpegurl')){
+          video.src=stream.href;
+        }else{
+          const Hls=await loadHls();
+          if(!Hls.isSupported())throw new Error('HLS unsupported');
+          const hls=new Hls({enableWorker:true});
+          hls.on(Hls.Events.ERROR,(_event,details)=>{
+            if(details.fatal){hls.destroy();fail();}
+          });
+          hls.loadSource(stream.href);
+          hls.attachMedia(video);
+        }
+        if(button)button.hidden=true;
+      }catch(_error){fail();}
+    };
+    if(button)button.addEventListener('click',start);
+    else start();
+  }
+})();
+
 document.querySelectorAll('video').forEach(video=>{
+  if(video.hasAttribute('data-taptap-video-id'))return;
   const showFallback=()=>{video.hidden=true;const link=video.parentElement.querySelector('.video-fallback');if(link)link.setAttribute('role','status');};
   video.addEventListener('error',showFallback);
   video.querySelectorAll('source').forEach(source=>source.addEventListener('error',showFallback));
