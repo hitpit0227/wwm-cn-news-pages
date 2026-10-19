@@ -97,6 +97,7 @@ function mobileRegions(filename,labels){
     const status=button?.querySelector('.video-play-status');
     const error=box?.querySelector('.video-error');
     const cover=box?.querySelector('.video-cover');
+    const linkedCard=Boolean(box?.classList.contains('video-box-linked'));
     if(cover)cover.addEventListener('error',()=>{
       const fallback=cover.dataset.fallbackSrc;
       if(fallback && fallback!==cover.src){
@@ -104,6 +105,21 @@ function mobileRegions(filename,labels){
         cover.src=fallback;
       }
     });
+    if(linkedCard){
+      // Native browser controls, no custom central button or autoplay.
+      video.controls=true;
+      const original=video.getAttribute('poster')||'';
+      if(/^https:\/\/[a-z0-9.-]+\.tapimg\.com\//i.test(original)){
+        const base=original.replace(/\/_tap_[a-z0-9_.-]+$/i,'');
+        const candidates=[...new Set([base+'/_tap_ugc.jpg',base,base+'/_tap_icon.jpg'])];
+        let current=0;
+        const probe=new Image();
+        probe.referrerPolicy='no-referrer';
+        probe.onload=()=>{video.poster=probe.src;};
+        probe.onerror=()=>{if(++current<candidates.length)probe.src=candidates[current];};
+        probe.src=candidates[0];
+      }
+    }
     let ready=false,initializing=false,hls=null;
     const setStatus=value=>{if(status)status.textContent=value;};
     const fail=()=>{
@@ -137,10 +153,15 @@ function mobileRegions(filename,labels){
       if(video.getAttribute('data-playback-error')==='true')return;
       ready=true;initializing=false;
       video.dataset.initialized='true';
-      // Keep the original preview and centered play button until the click.
-      if(button){button.disabled=false;button.hidden=false;}
-      video.controls=false;
-      setStatus('재생');
+      // Linked cards restore the original native player; others are unchanged.
+      if(linkedCard){
+        video.controls=true;
+        if(button)button.hidden=true;
+      }else{
+        if(button){button.disabled=false;button.hidden=false;}
+        video.controls=false;
+        setStatus('재생');
+      }
     };
     const prepare=async()=>{
       if(initializing||ready)return;
