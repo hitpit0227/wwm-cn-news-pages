@@ -74,9 +74,9 @@ function mobileRegions(filename,labels){
   });
 }
 
-// TapTap video uses the original stream address only. No download, conversion,
-// proxy, or video hosting occurs on this site. Signed URLs and cross-origin
-// playback must be checked in a real browser before publication is enabled.
+// TapTap video uses source metadata and original CDN only. The player prepares
+// on page load, but playback requires pressing the centered play control.
+// There is never autoplay, downloading, transcoding, or a video proxy.
 (()=>{
   const cdn='https://cdn.jsdelivr.net/npm/hls.js@1.7.3/dist/hls.min.js';
   let library;
@@ -90,18 +90,23 @@ function mobileRegions(filename,labels){
   }));
   for(const video of document.querySelectorAll('video[data-taptap-video-id]')){
     const box=video.closest('.video-box');
-    const button=box?.querySelector('.video-load');
+    const button=box?.querySelector('.video-play');
+    const status=button?.querySelector('.video-play-status');
     const error=box?.querySelector('.video-error');
+    let ready=false,initializing=false,hls=null;
+    const setStatus=value=>{if(status)status.textContent=value;};
     const fail=()=>{
-      video.dataset.initialized='';
-      if(error)error.hidden=false;
+      initializing=false;ready=false;
       video.setAttribute('data-playback-error','true');
-      if(button){button.hidden=false;button.disabled=false;button.textContent='원본 영상 다시 불러오기';}
+      if(hls){hls.destroy();hls=null;}
+      if(error)error.hidden=false;
+      if(button){button.hidden=false;button.disabled=false;}
+      setStatus('다시 시도');
     };
     video.addEventListener('error',fail);
     const getStream=async()=>{
       const endpoint=video.dataset.taptapPlaybackEndpoint;
-      if(!endpoint)return video.dataset.taptapStream;
+      if(!endpoint)throw new Error('TapTap playback relay unavailable');
       const api=new URL(endpoint);
       if(api.protocol!=='https:' || api.pathname!=='/api/video' || api.search)
         throw new Error('invalid playback endpoint');
@@ -115,41 +120,58 @@ function mobileRegions(filename,labels){
         throw new Error('source video identity mismatch');
       return data.stream_url;
     };
-    const start=async()=>{
-      if(video.dataset.initialized==='true')return;
+    const prepared=()=>{
+      if(video.getAttribute('data-playback-error')==='true')return;
+      ready=true;initializing=false;
       video.dataset.initialized='true';
+      if(button){button.disabled=false;button.hidden=!video.paused;}
+      setStatus('');
+    };
+    const prepare=async()=>{
+      if(initializing||ready)return;
+      initializing=true;
       video.removeAttribute('data-playback-error');
       if(error)error.hidden=true;
-      if(button){button.disabled=true;button.textContent='원본 영상 연결 중…';}
+      if(button){button.hidden=false;button.disabled=true;}
+      setStatus('영상 준비 중…');
       try{
-        // Resolve the original signed source address at user interaction time.
-        // This endpoint transfers only metadata; HLS segments are served directly
-        // by TapTap's original CDN, with no local video files or video proxy.
         const stream=new URL(await getStream());
-        if(stream.protocol!=='https:')throw new Error('unsafe stream');
+        if(stream.protocol!=='https:')throw new Error('unsafe source stream');
         if(!/\.m3u8(?:$|[?#])/i.test(stream.pathname+stream.search)){
           video.src=stream.href;
+          // A video may report metadata without decoding any frames; playing
+          // remains user-initiated even after the source URL is assigned.
+          if(video.readyState>=1)prepared();
+          else video.addEventListener('loadedmetadata',prepared,{once:true});
         }else{
-          // Chromium-based browsers can report native HLS support while the
-          // underlying player rejects the TapTap variant. Prefer MSE/hls.js
-          // when available, retaining native HLS for Safari/iOS fallback.
+          // Prefer MSE/hls.js on Chrome, native HLS on Safari/iOS.
           const Hls=await loadHls();
           if(Hls.isSupported()){
-            const hls=new Hls({enableWorker:true});
+            hls=new Hls({enableWorker:true});
             hls.on(Hls.Events.ERROR,(_event,details)=>{
-              if(details.fatal){hls.destroy();fail();}
+              if(details.fatal)fail();
             });
-            hls.loadSource(stream.href);
+            hls.on(Hls.Events.MANIFEST_PARSED,prepared);
             hls.attachMedia(video);
+            hls.loadSource(stream.href);
           }else if(video.canPlayType('application/vnd.apple.mpegurl')){
             video.src=stream.href;
+            if(video.readyState>=1)prepared();
+            else video.addEventListener('loadedmetadata',prepared,{once:true});
           }else throw new Error('HLS unsupported');
         }
-        if(button)button.hidden=true;
       }catch(_error){fail();}
     };
-    if(button)button.addEventListener('click',start);
-    else start();
+    if(button)button.addEventListener('click',()=>{
+      if(!ready){prepare();return;}
+      // Only a direct user gesture may invoke play. Never invoke video.play()
+      // during loading, page navigation, or a network completion callback.
+      video.play().catch(fail);
+    });
+    video.addEventListener('play',()=>{if(button)button.hidden=true;});
+    video.addEventListener('pause',()=>{if(button&&ready)button.hidden=false;});
+    video.addEventListener('ended',()=>{if(button&&ready)button.hidden=false;});
+    prepare();
   }
 })();
 
