@@ -96,11 +96,20 @@ function mobileRegions(filename,labels){
     const button=box?.querySelector('.video-play');
     const status=button?.querySelector('.video-play-status');
     const error=box?.querySelector('.video-error');
+    const cover=box?.querySelector('.video-cover');
+    if(cover)cover.addEventListener('error',()=>{
+      const fallback=cover.dataset.fallbackSrc;
+      if(fallback && fallback!==cover.src){
+        cover.removeAttribute('data-fallback-src');
+        cover.src=fallback;
+      }
+    });
     let ready=false,initializing=false,hls=null;
     const setStatus=value=>{if(status)status.textContent=value;};
     const fail=()=>{
       initializing=false;ready=false;
       video.controls=false;
+      if(cover)cover.hidden=false;
       video.setAttribute('data-playback-error','true');
       if(hls){hls.destroy();hls=null;}
       if(error)error.hidden=false;
@@ -128,10 +137,10 @@ function mobileRegions(filename,labels){
       if(video.getAttribute('data-playback-error')==='true')return;
       ready=true;initializing=false;
       video.dataset.initialized='true';
-      // Switch atomically from custom overlay to the browser's one native play control.
-      if(button){button.disabled=false;button.hidden=true;}
-      video.controls=true;
-      setStatus('');
+      // Keep the original preview and centered play button until the click.
+      if(button){button.disabled=false;button.hidden=false;}
+      video.controls=false;
+      setStatus('재생');
     };
     const prepare=async()=>{
       if(initializing||ready)return;
@@ -170,11 +179,14 @@ function mobileRegions(filename,labels){
     };
     if(button)button.addEventListener('click',()=>{
       if(!ready){prepare();return;}
-      // Only a direct user gesture may invoke play. Never invoke video.play()
-      // during loading, page navigation, or a network completion callback.
+      // The actual user gesture directly starts playback, never a network callback.
       video.play().catch(fail);
     });
-    video.addEventListener('play',()=>{if(button)button.hidden=true;});
+    video.addEventListener('play',()=>{
+      if(button)button.hidden=true;
+      if(cover)cover.hidden=true;
+      video.controls=true;
+    });
     // Once ready, native controls handle pause/resume/end without a second overlay.
     prepare();
   }

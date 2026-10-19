@@ -96,3 +96,9 @@ h1{color:#f5f1e8}
 .video-box-official .video-error a{color:#f1d58b}
 .video-box-official .video-play[hidden]{display:none}
 @media(max-width:600px){.video-box-official{padding:16px}}
+
+/* TapTap full-frame preview independent of the browser's video.poster path. */
+.video-box:has(video[data-taptap-video-id]){overflow:hidden}
+.video-box .video-cover{position:absolute;top:16px;left:16px;width:calc(100% - 32px);height:auto;aspect-ratio:16 / 9;object-fit:contain;background:#05090c;pointer-events:none;z-index:1;display:block}
+.video-box .video-cover[hidden]{display:none}
+.video-box:has(video[data-taptap-video-id]) .video-play{z-index:3}
