@@ -86,3 +86,13 @@ h1{color:#f5f1e8}
 .video-play:focus-visible{outline:3px solid #f1d58b;outline-offset:5px}
 .video-play[hidden]{display:none}
 @media(max-width:600px){.video-play{width:72px;height:72px}.video-play-icon{font-size:30px}}
+
+/* Original official MP4 video: full-frame 16:9 preview and centered play, never cropped. */
+.video-box-official{position:relative;padding:16px;background:#0d151d;overflow:hidden}
+.video-box-official video{width:100%;aspect-ratio:16 / 9;height:auto;object-fit:contain;background:#05090c;display:block;max-width:100%}
+.video-box-official .video-play{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:3}
+.video-box-official .video-play-status{font-size:10px;white-space:nowrap}
+.video-box-official .video-error{font-size:13px;color:#f3d2c0;margin:10px 0 0}
+.video-box-official .video-error a{color:#f1d58b}
+.video-box-official .video-play[hidden]{display:none}
+@media(max-width:600px){.video-box-official{padding:8px}}

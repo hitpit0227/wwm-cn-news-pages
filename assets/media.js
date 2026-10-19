@@ -175,8 +175,43 @@ function mobileRegions(filename,labels){
   }
 })();
 
+// Source MP4s use the same full-frame play button as TapTap, without
+// autoplay or altering the original CDN stream. Seek a fraction of a second
+// while paused so browsers can show the actual first frame instead of an
+// empty box when the official page supplies no poster image.
+document.querySelectorAll('.video-box-official').forEach(box=>{
+  const video=box.querySelector('video');
+  const play=box.querySelector('.video-play-official');
+  const error=box.querySelector('.video-error');
+  if(!video||!play)return;
+  let playingStarted=false;
+  video.controls=false;
+  video.addEventListener('loadedmetadata',()=>{
+    if(playingStarted||video.poster||!video.seekable?.length)return;
+    const target=Number.isFinite(video.duration)?Math.min(0.12,Math.max(0,video.duration-.02)):0.12;
+    try{video.currentTime=target;}catch(_ignored){}
+  },{once:true});
+  const showFailure=()=>{
+    if(error)error.hidden=false;
+    play.hidden=false;
+    play.disabled=false;
+    video.controls=true;
+  };
+  video.addEventListener('error',showFailure);
+  play.addEventListener('click',()=>{
+    playingStarted=true;
+    play.hidden=true;
+    video.controls=true;
+    video.play().catch(showFailure);
+  });
+  video.addEventListener('ended',()=>{
+    play.hidden=false;
+    video.controls=false;
+  });
+});
+
 document.querySelectorAll('video').forEach(video=>{
-  if(video.hasAttribute('data-taptap-video-id'))return;
+  if(video.hasAttribute('data-taptap-video-id')||video.closest('.video-box-official'))return;
   const showFallback=()=>{video.hidden=true;const link=video.parentElement.querySelector('.video-fallback');if(link)link.setAttribute('role','status');};
   video.addEventListener('error',showFallback);
   video.querySelectorAll('source').forEach(source=>source.addEventListener('error',showFallback));
