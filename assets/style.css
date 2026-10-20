@@ -15,7 +15,8 @@
 .mobile-original,.mobile-panels{display:none}
 @media(max-width:600px){
  .block-image>.original-image,.block-image .art-label,.mobile-panels{display:none!important}
- .block-image>.mobile-original{display:none}
+ .block-image>.mobile-original{display:block}
+ .block-image>.reconstructed{display:none}
  .mobile-original img{width:100%;height:auto}
 }
 
